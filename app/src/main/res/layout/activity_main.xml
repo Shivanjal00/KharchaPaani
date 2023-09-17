@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".views.activities.MainActivity">
 
 
     <com.google.android.material.appbar.MaterialToolbar
@@ -99,6 +99,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="5dp"
+        android:background="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tabLayout">
@@ -114,6 +115,7 @@
                 android:id="@+id/textView8"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textColor="@color/sky"
                 android:gravity="center"
                 android:text="Income" />
 
@@ -138,6 +140,7 @@
                 android:id="@+id/textView6"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textColor="@color/sky"
                 android:gravity="center"
                 android:text="Expense" />
 
@@ -162,6 +165,7 @@
                 android:id="@+id/textView3"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textColor="@color/sky"
                 android:gravity="center"
                 android:text="Total" />
 
@@ -169,6 +173,7 @@
                 android:id="@+id/totalLbl"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textColor="@color/black"
                 android:layout_marginTop="3dp"
                 android:gravity="center"
                 android:text="0.0" />
@@ -197,6 +202,7 @@
         android:layout_marginBottom="8dp"
         android:clickable="true"
         android:src="@drawable/plus"
+
         app:backgroundTint="@color/sky"
         app:layout_constraintBottom_toTopOf="@+id/bottomNavigationView"
         app:layout_constraintEnd_toEndOf="parent"
@@ -206,7 +212,8 @@
         android:id="@+id/transactionsList"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        tools:listitem=""
+        tools:listitem="@layout/row_transaction"
+        android:background="@color/white"
         app:layout_constraintBottom_toTopOf="@+id/bottomNavigationView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
