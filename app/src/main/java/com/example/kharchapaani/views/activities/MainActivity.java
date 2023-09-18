@@ -19,16 +19,20 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
+import io.realm.Realm;
+import io.realm.RealmResults;
+
 public class MainActivity extends AppCompatActivity {
 
     ActivityMainBinding binding;
     Calendar calendar;
-
+    Realm realm;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
 
         setSupportActionBar(binding.toolBar);
         getSupportActionBar().setTitle("Transactions");
@@ -49,15 +53,27 @@ public class MainActivity extends AppCompatActivity {
         binding.floatingActionButton.setOnClickListener(c->{
             new AddTransactionFragment().show(getSupportFragmentManager(),null);
         });
-        ArrayList<Transaction> transactions = new ArrayList<>();
-        transactions.add(new Transaction(Constants.INCOME,"Business","Cash","Note here",new Date(),500,2));
-        transactions.add(new Transaction(Constants.EXPENSE,"Investment","Bank","Note here",new Date(),300,4));
-        transactions.add(new Transaction(Constants.EXPENSE,"Rent","PhonePe","Note here",new Date(),5000,5));
-        transactions.add(new Transaction(Constants.INCOME,"Business","Cash","Note here",new Date(),5050,6));
-        transactions.add(new Transaction(Constants.INCOME,"Loan","Other","Note here",new Date(),5070,8));
+
+        realm.beginTransaction();
+
+        realm.copyToRealmOrUpdate(new Transaction(Constants.INCOME,"Business","Cash","Note here",new Date(),500,new Date().getTime()));
+        realm.copyToRealmOrUpdate(new Transaction(Constants.EXPENSE,"Investment","Bank","Note here",new Date(),300,new Date().getTime()));
+        realm.copyToRealmOrUpdate(new Transaction(Constants.EXPENSE,"Rent","PhonePe","Note here",new Date(),5000,new Date().getTime()));
+        realm.copyToRealmOrUpdate(new Transaction(Constants.INCOME,"Business","Cash","Note here",new Date(),5050,new Date().getTime()));
+        realm.copyToRealmOrUpdate(new Transaction(Constants.INCOME,"Loan","Other","Note here",new Date(),5070,new Date().getTime()));
+
+        realm.commitTransaction();
+
+        RealmResults<Transaction> transactions = realm.where(Transaction.class).findAll();
+
         TransactionsAdapter transactionsAdapter = new TransactionsAdapter(this,transactions);
         binding.transactionsList.setLayoutManager(new LinearLayoutManager(this));
         binding.transactionsList.setAdapter(transactionsAdapter);
+    }
+
+    void setupDatabse(){
+        Realm.init(this);
+        realm = Realm.getDefaultInstance();
     }
 
     void updateDate(){

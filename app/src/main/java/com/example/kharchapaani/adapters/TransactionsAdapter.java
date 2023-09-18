@@ -17,10 +17,12 @@ import com.example.kharchapaani.models.Transaction;
 
 import java.util.ArrayList;
 
+import io.realm.RealmResults;
+
 public class TransactionsAdapter extends RecyclerView.Adapter<TransactionsAdapter.TransactionViewHolder> {
     Context context;
-    ArrayList<Transaction> transactions;
-    public TransactionsAdapter(Context context, ArrayList<Transaction> transactions){
+    RealmResults<Transaction> transactions;
+    public TransactionsAdapter(Context context, RealmResults<Transaction> transactions){
         this.context = context;
         this.transactions = transactions;;
     }
