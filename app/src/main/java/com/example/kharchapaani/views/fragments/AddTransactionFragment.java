@@ -23,6 +23,8 @@ import com.example.kharchapaani.databinding.FragmentAddTransactionBinding;
 import com.example.kharchapaani.databinding.ListDialogBinding;
 import com.example.kharchapaani.models.Account;
 import com.example.kharchapaani.models.Category;
+import com.example.kharchapaani.models.Transaction;
+import com.example.kharchapaani.views.activities.MainActivity;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
@@ -45,17 +47,21 @@ public class AddTransactionFragment extends BottomSheetDialogFragment {
     }
 
     FragmentAddTransactionBinding binding;
+    Transaction transaction;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         binding = FragmentAddTransactionBinding.inflate(inflater);
 
+        transaction = new Transaction();
+
         binding.incomeBtn.setOnClickListener(view -> {
            binding.incomeBtn.setBackground(getContext().getDrawable(R.drawable.income_selector));
            binding.expenseBtn.setBackground(getContext().getDrawable(R.drawable.default_selector));
            binding.expenseBtn.setTextColor(getContext().getColor(R.color.textcolor));
            binding.incomeBtn.setTextColor(getContext().getColor(R.color.greenColor));
+           transaction.setType(Constants.INCOME);
         });
 
         binding.expenseBtn.setOnClickListener(view -> {
@@ -63,6 +69,7 @@ public class AddTransactionFragment extends BottomSheetDialogFragment {
             binding.expenseBtn.setBackground(getContext().getDrawable(R.drawable.expense_selector));
             binding.incomeBtn.setTextColor(getContext().getColor(R.color.textcolor));
             binding.expenseBtn.setTextColor(getContext().getColor(R.color.redColor));
+            transaction.setType(Constants.EXPENSE);
         });
 
         binding.date.setOnClickListener(new View.OnClickListener() {
@@ -78,6 +85,9 @@ public class AddTransactionFragment extends BottomSheetDialogFragment {
                     String datetoshow = Helper.formatDate(calendar.getTime());
                     binding.date.setText(datetoshow);
 
+                    transaction.setDate(calendar.getTime());
+                    transaction.setId(calendar.getTime().getTime());
+
                 });
                 datePickerDialog.show();
             }
@@ -92,6 +102,7 @@ public class AddTransactionFragment extends BottomSheetDialogFragment {
                 @Override
                 public void onCategoryClicked(Category category) {
                     binding.category.setText(category.getCategoryName());
+                    transaction.setCategory(category.getCategoryName());
                     categoryDialog.dismiss();
                 }
             });
@@ -116,7 +127,7 @@ public class AddTransactionFragment extends BottomSheetDialogFragment {
                 @Override
                 public void onAccountSelected(Account account) {
                     binding.account.setText(account.getAccountName());
-//                    transaction.setAccount(account.getAccountName());
+                    transaction.setAccount(account.getAccountName());
                     accountsDialog.dismiss();
                 }
             });
@@ -125,6 +136,19 @@ public class AddTransactionFragment extends BottomSheetDialogFragment {
             dialogBinding.recyclerView.setAdapter(adapter);
             accountsDialog.show();
 
+        });
+
+        binding.saveTransactionBtn.setOnClickListener(c ->{
+            double amount = Double.parseDouble(binding.amount.getText().toString());
+            String note = binding.note.getText().toString();
+            if (transaction.getType().equals(Constants.EXPENSE)) {
+                transaction.setAmount(amount*-1);
+            }else {
+                transaction.setAmount(amount);
+            }
+            transaction.setNote(note);
+            ((MainActivity)getActivity()).viewModel.addTransaction(transaction);
+            dismiss();
         });
 
         return binding.getRoot();

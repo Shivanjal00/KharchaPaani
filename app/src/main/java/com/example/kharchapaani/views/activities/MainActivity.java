@@ -1,6 +1,8 @@
 package com.example.kharchapaani.views.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import android.os.Bundle;
@@ -10,6 +12,7 @@ import com.example.kharchapaani.Utils.Constants;
 import com.example.kharchapaani.Utils.Helper;
 import com.example.kharchapaani.adapters.TransactionsAdapter;
 import com.example.kharchapaani.models.Transaction;
+import com.example.kharchapaani.viewmodels.MainViewModel;
 import com.example.kharchapaani.views.fragments.AddTransactionFragment;
 import com.example.kharchapaani.R;
 import com.example.kharchapaani.databinding.ActivityMainBinding;
@@ -26,13 +29,14 @@ public class MainActivity extends AppCompatActivity {
 
     ActivityMainBinding binding;
     Calendar calendar;
-    Realm realm;
+    public MainViewModel viewModel;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        viewModel = new ViewModelProvider(this).get(MainViewModel.class);
 
         setSupportActionBar(binding.toolBar);
         getSupportActionBar().setTitle("Transactions");
@@ -54,30 +58,41 @@ public class MainActivity extends AppCompatActivity {
             new AddTransactionFragment().show(getSupportFragmentManager(),null);
         });
 
-        realm.beginTransaction();
-
-        realm.copyToRealmOrUpdate(new Transaction(Constants.INCOME,"Business","Cash","Note here",new Date(),500,new Date().getTime()));
-        realm.copyToRealmOrUpdate(new Transaction(Constants.EXPENSE,"Investment","Bank","Note here",new Date(),300,new Date().getTime()));
-        realm.copyToRealmOrUpdate(new Transaction(Constants.EXPENSE,"Rent","PhonePe","Note here",new Date(),5000,new Date().getTime()));
-        realm.copyToRealmOrUpdate(new Transaction(Constants.INCOME,"Business","Cash","Note here",new Date(),5050,new Date().getTime()));
-        realm.copyToRealmOrUpdate(new Transaction(Constants.INCOME,"Loan","Other","Note here",new Date(),5070,new Date().getTime()));
-
-        realm.commitTransaction();
-
-        RealmResults<Transaction> transactions = realm.where(Transaction.class).findAll();
-
-        TransactionsAdapter transactionsAdapter = new TransactionsAdapter(this,transactions);
         binding.transactionsList.setLayoutManager(new LinearLayoutManager(this));
-        binding.transactionsList.setAdapter(transactionsAdapter);
+        viewModel.transactions.observe(this, new Observer<RealmResults<Transaction>>() {
+            @Override
+            public void onChanged(RealmResults<Transaction> transactions) {
+                TransactionsAdapter transactionsAdapter = new TransactionsAdapter(MainActivity.this,transactions);
+                binding.transactionsList.setAdapter(transactionsAdapter);
+            }
+        });
+        viewModel.totalIncome.observe(this, new Observer<Double>() {
+            @Override
+            public void onChanged(Double aDouble) {
+                binding.incomeLbl.setText(String.valueOf(String.valueOf(aDouble)));
+            }
+        });
+        viewModel.totalExpense.observe(this, new Observer<Double>() {
+            @Override
+            public void onChanged(Double aDouble) {
+                binding.expenseLbl.setText(String.valueOf(aDouble));
+            }
+        });
+        viewModel.totalAmount.observe(this, new Observer<Double>() {
+            @Override
+            public void onChanged(Double aDouble) {
+                binding.totalLbl.setText(String.valueOf(aDouble));
+            }
+        });
+        viewModel.getTransaction(calendar);
     }
 
-    void setupDatabse(){
-        Realm.init(this);
-        realm = Realm.getDefaultInstance();
-    }
+
 
     void updateDate(){
+
         binding.currentDate.setText(Helper.formatDate(calendar.getTime()));
+        viewModel.getTransaction(calendar);
     }
 
     @Override
