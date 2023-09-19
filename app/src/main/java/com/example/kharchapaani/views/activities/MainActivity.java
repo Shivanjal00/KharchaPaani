@@ -7,6 +7,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.View;
+import android.widget.Toast;
 
 import com.example.kharchapaani.Utils.Constants;
 import com.example.kharchapaani.Utils.Helper;
@@ -16,6 +18,7 @@ import com.example.kharchapaani.viewmodels.MainViewModel;
 import com.example.kharchapaani.views.fragments.AddTransactionFragment;
 import com.example.kharchapaani.R;
 import com.example.kharchapaani.databinding.ActivityMainBinding;
+import com.google.android.material.tabs.TabLayout;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -29,6 +32,11 @@ public class MainActivity extends AppCompatActivity {
 
     ActivityMainBinding binding;
     Calendar calendar;
+//    0 = daily
+//    1 = monthly
+//    2 = Calendar
+//    3 = Summary
+//    4 = Notes
     public MainViewModel viewModel;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,16 +54,47 @@ public class MainActivity extends AppCompatActivity {
         calendar = Calendar.getInstance();
         updateDate();
         binding.nextDateBtn.setOnClickListener(c->{
-            calendar.add(Calendar.DATE,1);
+            if(Constants.SELECTED_TAB == Constants.DAILY) {
+                calendar.add(Calendar.DATE, 1);
+            }else if(Constants.SELECTED_TAB == Constants.MONTHLY){
+                calendar.add(Calendar.MONTH, 1);
+            }
             updateDate();
         });
         binding.previousDateBtn.setOnClickListener(c->{
-            calendar.add(Calendar.DATE,-1);
+            if(Constants.SELECTED_TAB == Constants.DAILY) {
+                calendar.add(Calendar.DATE, -1);
+            }else if(Constants.SELECTED_TAB == Constants.MONTHLY){
+                calendar.add(Calendar.MONTH, -1);
+            }
             updateDate();
         });
 
         binding.floatingActionButton.setOnClickListener(c->{
             new AddTransactionFragment().show(getSupportFragmentManager(),null);
+        });
+
+        binding.tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                if(tab.getText().equals("Monthly")){
+                    Constants.SELECTED_TAB =1;
+                    updateDate();
+                } else if (tab.getText().equals("Daily")) {
+                    Constants.SELECTED_TAB=0;
+                    updateDate();
+                }
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
         });
 
         binding.transactionsList.setLayoutManager(new LinearLayoutManager(this));
@@ -64,6 +103,11 @@ public class MainActivity extends AppCompatActivity {
             public void onChanged(RealmResults<Transaction> transactions) {
                 TransactionsAdapter transactionsAdapter = new TransactionsAdapter(MainActivity.this,transactions);
                 binding.transactionsList.setAdapter(transactionsAdapter);
+                if(transactions.size()>0){
+                    binding.emptyState.setVisibility(View.GONE);
+                }else {
+                    binding.emptyState.setVisibility(View.VISIBLE);
+                }
             }
         });
         viewModel.totalIncome.observe(this, new Observer<Double>() {
@@ -87,11 +131,18 @@ public class MainActivity extends AppCompatActivity {
         viewModel.getTransaction(calendar);
     }
 
+    public void getTransactions(){
+        viewModel.getTransaction(calendar);
+    }
+
 
 
     void updateDate(){
-
-        binding.currentDate.setText(Helper.formatDate(calendar.getTime()));
+        if(Constants.SELECTED_TAB == Constants.DAILY){
+            binding.currentDate.setText(Helper.formatDate(calendar.getTime()));
+        }else if(Constants.SELECTED_TAB == Constants.MONTHLY){
+            binding.currentDate.setText(Helper.formatDateByMonth(calendar.getTime()));
+        }
         viewModel.getTransaction(calendar);
     }
 
